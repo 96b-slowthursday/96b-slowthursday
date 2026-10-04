@@ -1,0 +1,28 @@
+# Uma vez por dia, logo depois da meia-noite de Brasília: refaz o tempo do
+# Entreato (quinta anda na metade), o relógio na fase certa e o painel.
+name: sincronia do Entreato
+on:
+  schedule:
+    - cron: "7 3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r gerador/requisitos.txt
+      - run: python gerador/perfil.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: gravar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          git diff --cached --quiet || git commit -m "sincronia do Entreato"
+          git push
